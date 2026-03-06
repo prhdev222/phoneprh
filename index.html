@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>สมุดโทรศัพท์ภายใน</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f5f0eb;
+      --card: #fffdf9;
+      --text: #2c2416;
+      --muted: #8c7e6a;
+      --accent: #b8860b;
+      --accent-light: #daa520;
+      --border: #e6dfd5;
+      --hover: #faf6f0;
+      --green: #5a8a4a;
+      --red: #c0392b;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'IBM Plex Sans Thai', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      padding: 40px 20px 24px;
+    }
+
+    .header h1 {
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: -0.3px;
+    }
+
+    .header p {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 4px;
+      font-weight: 300;
+    }
+
+    /* Search */
+    .search-wrap {
+      max-width: 480px;
+      margin: 0 auto 20px;
+      padding: 0 20px;
+    }
+
+    .search-box {
+      position: relative;
+    }
+
+    .search-box svg {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      opacity: 0.6;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 13px 14px 13px 44px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      background: var(--card);
+      font-size: 15px;
+      font-family: inherit;
+      color: var(--text);
+      transition: border-color 0.2s;
+    }
+
+    .search-box input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .search-box input::placeholder { color: #bdb3a3; }
+
+    /* Count & Admin row */
+    .toolbar {
+      max-width: 480px;
+      margin: 0 auto 10px;
+      padding: 0 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .count {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 300;
+    }
+
+    .status-dot {
+      display: inline-block;
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      margin-right: 4px;
+      vertical-align: middle;
+    }
+
+    .admin-btn {
+      font-size: 11px;
+      padding: 5px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--muted);
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+
+    .admin-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .admin-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+    /* Table */
+    .table-wrap {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 0 20px 60px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--card);
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    thead th {
+      text-align: left;
+      padding: 11px 16px;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      background: #faf7f2;
+      border-bottom: 1px solid var(--border);
+    }
+
+    tbody tr {
+      transition: background 0.15s;
+    }
+
+    tbody tr:hover { background: var(--hover); }
+
+    tbody td {
+      padding: 12px 16px;
+      font-size: 14px;
+      border-bottom: 1px solid #f0ebe3;
+    }
+
+    tbody tr:last-child td { border-bottom: none; }
+
+    .phone-num {
+      font-weight: 500;
+      color: var(--accent);
+      letter-spacing: 0.3px;
+    }
+
+    /* Admin actions */
+    .admin-col { width: 60px; text-align: right; }
+
+    .act-btn {
+      width: 28px; height: 28px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+      background: transparent;
+      color: var(--muted);
+    }
+
+    .act-btn:hover { background: #f0ebe3; }
+    .act-btn.del:hover { background: #fde8e8; color: var(--red); }
+
+    /* Add form */
+    .add-form {
+      max-width: 480px;
+      margin: 0 auto 12px;
+      padding: 0 20px;
+      display: none;
+    }
+
+    .add-form.show { display: block; }
+
+    .add-form-inner {
+      display: flex;
+      gap: 8px;
+      padding: 12px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+
+    .add-form-inner input {
+      flex: 1;
+      padding: 9px 12px;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      font-size: 13px;
+      font-family: inherit;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .add-form-inner input:focus { outline: none; border-color: var(--accent); }
+
+    .save-btn {
+      padding: 9px 16px;
+      border: none;
+      border-radius: 7px;
+      background: var(--accent);
+      color: #fff;
+      font-size: 13px;
+      font-family: inherit;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.15s;
+    }
+
+    .save-btn:hover { background: var(--accent-light); }
+
+    /* Empty state */
+    .empty {
+      text-align: center;
+      padding: 50px 20px;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 300;
+    }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.3);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 20px;
+    }
+
+    .modal-overlay.show { display: flex; }
+
+    .modal {
+      background: var(--card);
+      border-radius: 14px;
+      padding: 28px;
+      width: 100%;
+      max-width: 340px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+    }
+
+    .modal h3 {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      text-align: center;
+    }
+
+    .modal p {
+      font-size: 12px;
+      color: var(--muted);
+      text-align: center;
+      margin-bottom: 18px;
+    }
+
+    .modal input {
+      width: 100%;
+      padding: 12px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-size: 20px;
+      font-family: inherit;
+      text-align: center;
+      letter-spacing: 8px;
+      color: var(--text);
+      background: var(--bg);
+    }
+
+    .modal input:focus { outline: none; border-color: var(--accent); }
+
+    .modal-btn {
+      width: 100%;
+      padding: 11px;
+      margin-top: 14px;
+      border: none;
+      border-radius: 8px;
+      background: var(--accent);
+      color: #fff;
+      font-size: 14px;
+      font-weight: 500;
+      font-family: inherit;
+      cursor: pointer;
+    }
+
+    .modal .error { color: var(--red); font-size: 12px; text-align: center; margin-top: 8px; }
+
+    /* Settings modal */
+    .settings-group { margin-bottom: 14px; }
+    .settings-group label {
+      display: block;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+    .settings-group input {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      font-size: 12px;
+      font-family: inherit;
+      color: var(--text);
+      background: var(--bg);
+      letter-spacing: normal;
+      text-align: left;
+    }
+
+    .toast {
+      position: fixed;
+      top: 16px; right: 16px;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      color: #fff;
+      z-index: 200;
+      opacity: 0;
+      transform: translateY(-10px);
+      transition: all 0.3s;
+    }
+
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast.success { background: var(--green); }
+    .toast.error { background: var(--red); }
+
+    /* Edit inline */
+    .edit-input {
+      padding: 4px 8px;
+      border: 1px solid var(--accent);
+      border-radius: 5px;
+      font-size: 13px;
+      font-family: inherit;
+      color: var(--text);
+      width: 100%;
+      background: #fffef9;
+    }
+
+    @media (max-width: 400px) {
+      .add-form-inner { flex-wrap: wrap; }
+      .add-form-inner input { min-width: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>☎ สมุดโทรศัพท์ภายใน</h1>
+    <p>ค้นหาเบอร์โทรภายในหน่วยงาน</p>
+  </div>
+
+  <div class="search-wrap">
+    <div class="search-box">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <input type="text" id="searchInput" placeholder="พิมพ์ชื่อหน่วยงาน หรือ เบอร์โทร..." autocomplete="off">
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <span class="count" id="countLabel">
+      <span class="status-dot" id="statusDot" style="background:#daa520"></span>
+      <span id="countText">0 รายการ</span>
+    </span>
+    <div>
+      <button class="admin-btn" id="adminToggle" onclick="toggleAdmin()">🔒 Admin</button>
+      <button class="admin-btn" id="settingsBtn" style="display:none;margin-left:4px" onclick="openSettings()">⚙️</button>
+    </div>
+  </div>
+
+  <div class="add-form" id="addForm">
+    <div class="add-form-inner">
+      <input type="text" id="addName" placeholder="ชื่อหน่วยงาน">
+      <input type="text" id="addPhone" placeholder="เบอร์โทร" style="max-width:110px">
+      <button class="save-btn" onclick="addEntry()">เพิ่ม</button>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <div id="tableContainer"></div>
+  </div>
+
+  <!-- PIN Modal -->
+  <div class="modal-overlay" id="pinModal">
+    <div class="modal">
+      <h3>🔐 Admin Login</h3>
+      <p>กรอก PIN เพื่อจัดการข้อมูล</p>
+      <input type="password" id="pinInput" placeholder="PIN" maxlength="10" onkeydown="if(event.key==='Enter')submitPin()">
+      <div class="error" id="pinError"></div>
+      <button class="modal-btn" onclick="submitPin()">เข้าสู่ระบบ</button>
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div class="modal-overlay" id="settingsModal">
+    <div class="modal">
+      <h3>⚙️ ตั้งค่า</h3>
+      <p>ตั้งค่า PIN สำหรับ Admin</p>
+      <div class="settings-group">
+        <label>Admin PIN</label>
+        <input type="text" id="settingsPin">
+      </div>
+      <button class="modal-btn" onclick="saveSettings()">บันทึก</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ======= CONFIG =======
+    const API_URL = '/api/sheet'; // proxy บน Vercel (ซ่อน Apps Script URL ไว้ใน env)
+    let ADMIN_PIN = '1234';
+    let isAdmin = false;
+    let editingRow = null;
+
+    // ======= DEMO DATA =======
+    let entries = [
+      { row: 2, name: 'ห้องตรวจอายุรกรรม OPD', phone: '1101' },
+      { row: 3, name: 'หอผู้ป่วยอายุรกรรมชาย 1', phone: '1201' },
+      { row: 4, name: 'หอผู้ป่วยอายุรกรรมหญิง 1', phone: '1202' },
+      { row: 5, name: 'ห้องฉุกเฉิน ER', phone: '1300' },
+      { row: 6, name: 'ห้องปฏิบัติการ Lab', phone: '1401' },
+      { row: 7, name: 'เภสัชกรรม', phone: '1501' },
+      { row: 8, name: 'รังสีวิทยา X-Ray', phone: '1601' },
+      { row: 9, name: 'กายภาพบำบัด', phone: '1701' },
+      { row: 10, name: 'ศูนย์ไตเทียม', phone: '1801' },
+      { row: 11, name: 'ห้องผ่าตัด OR', phone: '1901' },
+      { row: 12, name: 'ICU อายุรกรรม', phone: '2001' },
+      { row: 13, name: 'แผนกทันตกรรม', phone: '2101' },
+      { row: 14, name: 'งานเวชระเบียน', phone: '2201' },
+      { row: 15, name: 'ห้องประชุมใหญ่', phone: '2301' },
+      { row: 16, name: 'ฝ่ายบริหาร', phone: '2401' },
+    ];
+
+    // ======= SEARCH =======
+    const searchInput = document.getElementById('searchInput');
+    searchInput.addEventListener('input', render);
+
+    function getFiltered() {
+      const q = searchInput.value.toLowerCase().trim();
+      if (!q) return entries;
+      return entries.filter(e =>
+        e.name.toLowerCase().includes(q) || String(e.phone).toLowerCase().includes(q)
+      );
+    }
+
+    // ======= RENDER TABLE =======
+    function render() {
+      const filtered = getFiltered();
+      const container = document.getElementById('tableContainer');
+      document.getElementById('countText').textContent = filtered.length + ' รายการ';
+
+      if (filtered.length === 0) {
+        container.innerHTML = '<div class="empty">ไม่พบข้อมูลที่ค้นหา</div>';
+        return;
+      }
+
+      let html = '<table><thead><tr>';
+      html += '<th>ชื่อหน่วยงาน</th><th>เบอร์โทร</th>';
+      if (isAdmin) html += '<th class="admin-col"></th>';
+      html += '</tr></thead><tbody>';
+
+      filtered.forEach(e => {
+        if (editingRow === e.row) {
+          html += `<tr>
+            <td><input class="edit-input" id="editName" value="${esc(e.name)}"></td>
+            <td><input class="edit-input" id="editPhone" value="${esc(e.phone)}" style="width:90px"></td>
+            <td class="admin-col">
+              <button class="act-btn" onclick="saveEdit(${e.row})" title="บันทึก">✓</button>
+              <button class="act-btn" onclick="cancelEdit()" title="ยกเลิก">✕</button>
+            </td>
+          </tr>`;
+        } else {
+          html += `<tr>
+            <td>${esc(e.name)}</td>
+            <td class="phone-num">${esc(e.phone)}</td>`;
+          if (isAdmin) {
+            html += `<td class="admin-col">
+              <button class="act-btn" onclick="startEdit(${e.row})" title="แก้ไข">✎</button>
+              <button class="act-btn del" onclick="deleteEntry(${e.row})" title="ลบ">✕</button>
+            </td>`;
+          }
+          html += '</tr>';
+        }
+      });
+
+      html += '</tbody></table>';
+      container.innerHTML = html;
+    }
+
+    function esc(s) {
+      const d = document.createElement('div');
+      d.textContent = s;
+      return d.innerHTML;
+    }
+
+    // ======= ADMIN =======
+    function toggleAdmin() {
+      if (isAdmin) {
+        isAdmin = false;
+        editingRow = null;
+        document.getElementById('adminToggle').textContent = '🔒 Admin';
+        document.getElementById('adminToggle').classList.remove('active');
+        document.getElementById('settingsBtn').style.display = 'none';
+        document.getElementById('addForm').classList.remove('show');
+        render();
+        showToast('ออกจากโหมด Admin');
+      } else {
+        document.getElementById('pinModal').classList.add('show');
+        document.getElementById('pinInput').value = '';
+        document.getElementById('pinError').textContent = '';
+        setTimeout(() => document.getElementById('pinInput').focus(), 100);
+      }
+    }
+
+    function submitPin() {
+      const pin = document.getElementById('pinInput').value;
+      if (pin === ADMIN_PIN) {
+        isAdmin = true;
+        document.getElementById('pinModal').classList.remove('show');
+        document.getElementById('adminToggle').textContent = '🔓 ออก Admin';
+        document.getElementById('adminToggle').classList.add('active');
+        document.getElementById('settingsBtn').style.display = '';
+        document.getElementById('addForm').classList.add('show');
+        render();
+        showToast('เข้าสู่โหมด Admin');
+      } else {
+        document.getElementById('pinError').textContent = 'PIN ไม่ถูกต้อง';
+      }
+    }
+
+    // ======= ADD =======
+    async function addEntry() {
+      const name = document.getElementById('addName').value.trim();
+      const phone = document.getElementById('addPhone').value.trim();
+      if (!name || !phone) return showToast('กรุณากรอกข้อมูลให้ครบ', 'error');
+
+      try {
+        await fetch(API_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: 'add', pin: ADMIN_PIN, name, phone })
+        });
+        await fetchData();
+      } catch (err) {
+        showToast('เพิ่มไม่สำเร็จ', 'error');
+        return;
+      }
+
+      document.getElementById('addName').value = '';
+      document.getElementById('addPhone').value = '';
+      render();
+      showToast('เพิ่มข้อมูลสำเร็จ');
+    }
+
+    // ======= EDIT =======
+    function startEdit(row) { editingRow = row; render(); }
+    function cancelEdit() { editingRow = null; render(); }
+
+    async function saveEdit(row) {
+      const name = document.getElementById('editName').value.trim();
+      const phone = document.getElementById('editPhone').value.trim();
+      if (!name || !phone) return;
+
+      try {
+        await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({ action: 'update', pin: ADMIN_PIN, row, name, phone })
+        });
+        await fetchData();
+      } catch (err) {
+        showToast('แก้ไขไม่สำเร็จ', 'error');
+        return;
+      }
+
+      editingRow = null;
+      render();
+      showToast('แก้ไขสำเร็จ');
+    }
+
+    // ======= DELETE =======
+    async function deleteEntry(row) {
+      const entry = entries.find(e => e.row === row);
+      if (!confirm('ลบ "' + entry.name + '" ?')) return;
+
+      try {
+        await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({ action: 'delete', pin: ADMIN_PIN, row })
+        });
+        await fetchData();
+      } catch (err) {
+        showToast('ลบไม่สำเร็จ', 'error');
+        return;
+      }
+
+      render();
+      showToast('ลบข้อมูลสำเร็จ');
+    }
+
+    // ======= FETCH FROM GOOGLE SHEET =======
+    async function fetchData() {
+      try {
+        const res = await fetch(API_URL + '?action=all');
+        const data = await res.json();
+        if (data.entries) {
+          entries = data.entries;
+          document.getElementById('statusDot').style.background = '#5a8a4a';
+        }
+      } catch (err) {
+        document.getElementById('statusDot').style.background = '#c0392b';
+      }
+      render();
+    }
+
+    // ======= SETTINGS =======
+    function openSettings() {
+      document.getElementById('settingsUrl').value = SCRIPT_URL;
+      document.getElementById('settingsPin').value = ADMIN_PIN;
+      document.getElementById('settingsModal').classList.add('show');
+    }
+
+    function saveSettings() {
+      SCRIPT_URL = document.getElementById('settingsUrl').value.trim();
+      ADMIN_PIN = document.getElementById('settingsPin').value.trim() || '1234';
+      document.getElementById('settingsModal').classList.remove('show');
+      if (SCRIPT_URL) fetchData();
+      showToast('บันทึกการตั้งค่าแล้ว');
+    }
+
+    // close modal on overlay click
+    document.querySelectorAll('.modal-overlay').forEach(el => {
+      el.addEventListener('click', e => {
+        if (e.target === el) el.classList.remove('show');
+      });
+    });
+
+    // ======= TOAST =======
+    function showToast(msg, type = 'success') {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = 'toast ' + type + ' show';
+      setTimeout(() => t.classList.remove('show'), 2500);
+    }
+
+    // ======= INIT =======
+    render();
+  </script>
+</body>
+</html>
