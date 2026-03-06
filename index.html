@@ -30,31 +30,18 @@
 
     /* Header */
     .header {
+      text-align: center;
       padding: 40px 20px 24px;
-      display: flex;
-      justify-content: center;
     }
 
-    .header-inner {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
-
-    .header-icon {
-      width: 72px;
-      height: 72px;
-      object-fit: cover;
-    }
-
-    .header-text h1 {
+    .header h1 {
       font-size: 22px;
       font-weight: 600;
       color: var(--text);
       letter-spacing: -0.3px;
     }
 
-    .header-text p {
+    .header p {
       font-size: 13px;
       color: var(--muted);
       margin-top: 4px;
@@ -430,13 +417,8 @@
 <body>
 
   <div class="header">
-    <div class="header-inner">
-      <img src="public/lovephone.png" alt="สมุดโทรศัพท์" class="header-icon">
-      <div class="header-text">
-        <h1>☎ สมุดโทรศัพท์ภายใน</h1>
-        <p>ค้นหาเบอร์โทรภายในหน่วยงาน</p>
-      </div>
-    </div>
+    <h1>☎ สมุดโทรศัพท์ภายใน</h1>
+    <p>ค้นหาเบอร์โทรภายในหน่วยงาน</p>
   </div>
 
   <div class="search-wrap">
