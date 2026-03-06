@@ -650,16 +650,13 @@
 
     // ======= SETTINGS =======
     function openSettings() {
-      document.getElementById('settingsUrl').value = SCRIPT_URL;
       document.getElementById('settingsPin').value = ADMIN_PIN;
       document.getElementById('settingsModal').classList.add('show');
     }
 
     function saveSettings() {
-      SCRIPT_URL = document.getElementById('settingsUrl').value.trim();
       ADMIN_PIN = document.getElementById('settingsPin').value.trim() || '1234';
       document.getElementById('settingsModal').classList.remove('show');
-      if (SCRIPT_URL) fetchData();
       showToast('บันทึกการตั้งค่าแล้ว');
     }
 
@@ -679,7 +676,7 @@
     }
 
     // ======= INIT =======
-    render();
+    fetchData();
   </script>
 </body>
 </html>
