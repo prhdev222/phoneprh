@@ -30,18 +30,31 @@
 
     /* Header */
     .header {
-      text-align: center;
       padding: 40px 20px 24px;
+      display: flex;
+      justify-content: center;
     }
 
-    .header h1 {
+    .header-inner {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .header-icon {
+      width: 72px;
+      height: 72px;
+      object-fit: cover;
+    }
+
+    .header-text h1 {
       font-size: 22px;
       font-weight: 600;
       color: var(--text);
       letter-spacing: -0.3px;
     }
 
-    .header p {
+    .header-text p {
       font-size: 13px;
       color: var(--muted);
       margin-top: 4px;
@@ -358,6 +371,44 @@
     .toast.success { background: var(--green); }
     .toast.error { background: var(--red); }
 
+    /* Loader */
+    .loader {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 240px;
+    }
+
+    .loading-text {
+      font-family: sans-serif;
+      font-size: 18px;
+      color: #666;
+      margin-top: 10px;
+      animation: blink 1.6s infinite;
+    }
+
+    .phone {
+      transform-origin: 110px 140px;
+      animation: ring 1.6s ease-in-out infinite;
+    }
+
+    @keyframes ring {
+      0% { transform: rotate(0deg); }
+      15% { transform: rotate(-10deg); }
+      30% { transform: rotate(10deg); }
+      45% { transform: rotate(-8deg); }
+      60% { transform: rotate(6deg); }
+      75% { transform: rotate(-3deg); }
+      100% { transform: rotate(0deg); }
+    }
+
+    @keyframes blink {
+      0% { opacity: 1; }
+      50% { opacity: 0.4; }
+      100% { opacity: 1; }
+    }
+
     /* Edit inline */
     .edit-input {
       padding: 4px 8px;
@@ -379,8 +430,13 @@
 <body>
 
   <div class="header">
-    <h1>☎ สมุดโทรศัพท์ภายใน</h1>
-    <p>ค้นหาเบอร์โทรภายในหน่วยงาน</p>
+    <div class="header-inner">
+      <img src="public/lovephone.png" alt="สมุดโทรศัพท์" class="header-icon">
+      <div class="header-text">
+        <h1>☎ สมุดโทรศัพท์ภายใน</h1>
+        <p>ค้นหาเบอร์โทรภายในหน่วยงาน</p>
+      </div>
+    </div>
   </div>
 
   <div class="search-wrap">
@@ -410,6 +466,25 @@
   </div>
 
   <div class="table-wrap">
+    <div id="loader" class="loader">
+      <svg width="220" height="220" viewBox="0 0 220 220">
+        <g class="phone">
+          <!-- body of phone -->
+          <rect x="85" y="80" width="50" height="90" rx="10" fill="#90A4AE"/>
+          <!-- screen -->
+          <rect x="90" y="88" width="40" height="70" rx="6" fill="#FFFFFF"/>
+          <!-- top speaker -->
+          <rect x="102" y="84" width="16" height="3" rx="1.5" fill="#78909C"/>
+          <!-- home button -->
+          <circle cx="110" cy="174" r="3" fill="#78909C"/>
+
+          <!-- signal waves -->
+          <path d="M140 110 Q150 120 140 130" fill="none" stroke="#FFB300" stroke-width="3" stroke-linecap="round"/>
+          <path d="M146 104 Q160 120 146 136" fill="none" stroke="#FFB300" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
+        </g>
+      </svg>
+      <p class="loading-text">กำลังโหลดข้อมูล...</p>
+    </div>
     <div id="tableContainer"></div>
   </div>
 
@@ -441,7 +516,10 @@
 
   <script>
     // ======= CONFIG =======
-    const API_URL = '/api/sheet'; // proxy บน Vercel (ซ่อน Apps Script URL ไว้ใน env)
+    const API_URL =
+      window.location.protocol === 'file:'
+        ? 'https://phoneprh.vercel.app/api/sheet' // เวลาเปิดไฟล์ local ให้เรียก API ที่ Vercel ตรง ๆ
+        : '/api/sheet'; // เวลาใช้งานบน Vercel จริง ใช้ relative path
     let ADMIN_PIN = '1234';
     let isAdmin = false;
     let editingRow = null;
@@ -633,8 +711,20 @@
       showToast('ลบข้อมูลสำเร็จ');
     }
 
+    // ======= LOADER =======
+    function showLoader() {
+      const el = document.getElementById('loader');
+      if (el) el.style.display = 'flex';
+    }
+
+    function hideLoader() {
+      const el = document.getElementById('loader');
+      if (el) el.style.display = 'none';
+    }
+
     // ======= FETCH FROM GOOGLE SHEET =======
     async function fetchData() {
+      showLoader();
       try {
         const res = await fetch(API_URL + '?action=all');
         const data = await res.json();
@@ -646,6 +736,7 @@
         document.getElementById('statusDot').style.background = '#c0392b';
       }
       render();
+      hideLoader();
     }
 
     // ======= SETTINGS =======
