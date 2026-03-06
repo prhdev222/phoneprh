@@ -1,4 +1,4 @@
-export default async function handler(req, res) {
+module.exports = async (req, res) => {
   const appsScriptUrl = process.env.APPSCRIPT_URL;
 
   if (!appsScriptUrl) {
@@ -14,7 +14,15 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'POST') {
-      const body = req.body || {};
+      // Vercel อาจส่ง req.body เป็น string หรือ object
+      let body = req.body || {};
+      if (typeof body === 'string') {
+        try {
+          body = JSON.parse(body);
+        } catch (_) {
+          body = {};
+        }
+      }
 
       const upstreamRes = await fetch(appsScriptUrl, {
         method: 'POST',
@@ -26,7 +34,7 @@ export default async function handler(req, res) {
       try {
         data = await upstreamRes.json();
       } catch (_) {
-        // ignore JSON parse error; return empty object
+        // ถ้า Apps Script ไม่ได้ส่ง JSON กลับมาก็ให้เป็น object ว่าง
       }
 
       return res.status(upstreamRes.ok ? 200 : 500).json(data);
@@ -37,5 +45,5 @@ export default async function handler(req, res) {
   } catch (error) {
     return res.status(500).json({ error: 'Failed to contact Apps Script.' });
   }
-}
+};
 

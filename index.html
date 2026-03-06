@@ -571,6 +571,7 @@
       try {
         await fetch(API_URL, {
             method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'add', pin: ADMIN_PIN, name, phone })
         });
         await fetchData();
@@ -597,6 +598,7 @@
       try {
         await fetch(API_URL, {
           method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ action: 'update', pin: ADMIN_PIN, row, name, phone })
         });
         await fetchData();
@@ -618,6 +620,7 @@
       try {
         await fetch(API_URL, {
           method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ action: 'delete', pin: ADMIN_PIN, row })
         });
         await fetchData();
